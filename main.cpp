@@ -133,7 +133,7 @@ public:
 
     indexing_iterator operator--(int)
     {
-        tuple_vector_iterator tmp(*this);
+        indexing_iterator tmp(*this);
         operator--();
         return tmp;
     }
