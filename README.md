@@ -42,4 +42,4 @@ The results of this test/benchmark gathered on VS2013 /O2 Win7 Intel i7 870 (Lyn
     std::vector<std::tuple<>> iteration (access all): 0.162009
     std::vector<std::tuple<>> sort (access one, copy all): 1.60809
     
-The data locality and access pattern is extremely important nowadays. Note that in the case of std::vector<std::tuple> it's not important how many operations are performed (to some extent) because the CPU is mainly waiting for the next chunk of data.
+The data locality and access pattern is extremely important nowadays. Note that in the case of std::vector&lt;std::tuple> it's not important how many operations are performed (to some extent) because the CPU is mainly waiting for the next chunk of data.
