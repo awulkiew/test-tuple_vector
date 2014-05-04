@@ -45,52 +45,52 @@ template <typename Allocator, typename... Ts>
 struct tuple_vector_members<Allocator, std::tuple<Ts...> >
 {
     typedef typename Allocator::size_type size_type;
-	typedef std::tuple<Ts&...> reference;
+    typedef std::tuple<Ts&...> reference;
     typedef std::tuple<Ts...> value_type;
 
-	reference operator[](size_type index)
-	{
-		return subscript_dispatch(index, typename gens<sizeof...(Ts)>::type());
-	}
+    reference operator[](size_type index)
+    {
+        return subscript_dispatch(index, typename gens<sizeof...(Ts)>::type());
+    }
 
-	void resize(size_type count)
-	{
-		// TODO - revert on exception
-		for_each_container<0, sizeof...(Ts)>::resize(count, m_containers);
-	}
+    void resize(size_type count)
+    {
+        // TODO - revert on exception
+        for_each_container<0, sizeof...(Ts)>::resize(count, m_containers);
+    }
 
 private:
-	typedef std::tuple< std::vector<Ts, Allocator>... > containers_type;
+    typedef std::tuple< std::vector<Ts, Allocator>... > containers_type;
 
-	template <int ...S>
-	reference subscript_dispatch(size_type index, seq<S...>)
-	{
-		return reference(std::get<S>(m_containers)[index]...);
-	}
+    template <int ...S>
+    reference subscript_dispatch(size_type index, seq<S...>)
+    {
+        return reference(std::get<S>(m_containers)[index]...);
+    }
 
-	containers_type m_containers;
+    containers_type m_containers;
 };
 
 template <typename Tuple, typename Allocator = std::allocator<Tuple> >
 class tuple_vector
-	: private tuple_vector_members<Allocator, Tuple>
+    : private tuple_vector_members<Allocator, Tuple>
 {
-	typedef tuple_vector_members<Allocator, Tuple> base_t;
+    typedef tuple_vector_members<Allocator, Tuple> base_t;
 
 public:
-	typedef typename base_t::size_type size_type;
-	typedef typename base_t::reference reference;
+    typedef typename base_t::size_type size_type;
+    typedef typename base_t::reference reference;
     typedef typename base_t::value_type value_type;
     
-	reference operator[](size_type index)
-	{
-		return base_t::operator[](index);
-	}
+    reference operator[](size_type index)
+    {
+        return base_t::operator[](index);
+    }
 
-	void resize(size_type count)
-	{
-		return base_t::resize(count);
-	}
+    void resize(size_type count)
+    {
+        return base_t::resize(count);
+    }
 };
 
 template <typename Container>
