@@ -1,7 +1,7 @@
 test-tuple_vector
 =================
 
-C++11 implementation of a container emulating std::vector&lt;std::tuple>, internally storing tuple of vectors of Ts for better locality of data of the same type.
+A container emulating std::vector&lt;std::tuple>, internally storing tuple of vectors of Ts for better locality of data of the same type.
 
 Intended usage:
 
