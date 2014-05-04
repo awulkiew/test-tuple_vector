@@ -4,6 +4,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <string>
 #include <chrono>
 #include <cassert>
 
@@ -188,103 +189,94 @@ struct A
     float arr[4];
 };
 
-int main()
+typedef std::tuple<float, A, double, int, std::string> T;
+
+template <typename V>
+inline void test(std::string const& name)
 {
     std::ifstream file("asdas");
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
-    typedef std::tuple<float, A, double, int, std::string> T;
     static const int count = 10000000;
 
-	{
-        typedef tuple_vector<T> V;
-        V v;
-        v.resize(count);
+    std::cout << "count: " << count << '\n';
 
-        file >> std::get<0>(v[0]);
+    V v;
+    v.resize(count);
 
-        {
-            start = std::chrono::system_clock::now();
-            for (int i = 1; i < count; ++i)
-                std::get<0>(v[i]) = std::get<0>(v[i - 1]) + 0.01f;
-            end = std::chrono::system_clock::now();
-
-            std::chrono::duration<double> s = end - start;
-
-            std::cout << "tuple_vector iteration (access one): " << s.count() << '\n';
-        }
-        {
-            start = std::chrono::system_clock::now();
-            for (int i = 1; i < count; ++i)
-            {
-                std::get<0>(v[i]) = std::get<0>(v[i - 1]) + 0.01f;
-                std::get<1>(v[i]).arr[0] = std::get<0>(v[i]);
-                std::get<2>(v[i]) = std::get<1>(v[i]).arr[0];
-                std::get<3>(v[i]) = int(std::get<2>(v[i]));
-                std::get<4>(v[i]) = char('0' + std::get<3>(v[i]));
-            }
-            end = std::chrono::system_clock::now();
-
-            std::chrono::duration<double> s = end - start;
-
-            std::cout << "tuple_vector iteration (access all): " << s.count() << '\n';
-        }
-        {
-            start = std::chrono::system_clock::now();
-            typedef indexing_iterator<V> I;
-            std::sort(I(v, 0), I(v, count), greater());
-            end = std::chrono::system_clock::now();
-
-            std::chrono::duration<double> s = end - start;
-
-            std::cout << "tuple_vector sort (access all): " << s.count() << '\n';
-        }
-        std::cout << "dummy: " << std::get<0>(v[count - 1]) << std::get<1>(v[count - 1]).arr[0] << std::get<2>(v[count - 1]) << '\n';
-	}
+    file >> std::get<0>(v[0]);
 
     {
-        typedef std::vector<T> V;
-        V v;
-        v.resize(count);
+        start = std::chrono::system_clock::now();
+        for (int i = 1; i < count; ++i)
+            std::get<0>(v[i]) = std::get<0>(v[i - 1]) + 0.01f;
+        end = std::chrono::system_clock::now();
 
-        file >> std::get<0>(v[0]);
+        std::chrono::duration<double> s = end - start;
 
+        std::cout << name << " iteration (access one +): " << s.count() << '\n';
+    }
+    {
+        start = std::chrono::system_clock::now();
+        for (int i = 1; i < count; ++i)
+            std::get<0>(v[i]) = std::get<0>(v[i - 1]) / 3;
+        end = std::chrono::system_clock::now();
+
+        std::chrono::duration<double> s = end - start;
+
+        std::cout << name << " iteration (access one /): " << s.count() << '\n';
+    }
+    {
+        start = std::chrono::system_clock::now();
+        for (int i = 1; i < count; ++i)
+            std::get<0>(v[i]) = ::sqrt(std::get<0>(v[i - 1]));
+        end = std::chrono::system_clock::now();
+
+        std::chrono::duration<double> s = end - start;
+
+        std::cout << name << " iteration (access one sqrt): " << s.count() << '\n';
+    }
+    {
+        start = std::chrono::system_clock::now();
+        for (int i = 1; i < count; ++i)
+            std::get<0>(v[i]) = ::sqrt(::sqrt(std::get<0>(v[i - 1])));
+        end = std::chrono::system_clock::now();
+
+        std::chrono::duration<double> s = end - start;
+
+        std::cout << name << " iteration (access one sqrt of sqrt): " << s.count() << '\n';
+    }
+    {
+        start = std::chrono::system_clock::now();
+        for (int i = 1; i < count; ++i)
         {
-            start = std::chrono::system_clock::now();
-            for (int i = 1; i < count; ++i)
-                std::get<0>(v[i]) = std::get<0>(v[i - 1]) + 0.01f;
-            end = std::chrono::system_clock::now();
-
-            std::chrono::duration<double> s = end - start;
-
-            std::cout << "vector<tuple> iteration (access one): " << s.count() << '\n';
+            std::get<0>(v[i]) = std::get<0>(v[i - 1]) + 0.01f;
+            std::get<1>(v[i]).arr[0] = std::get<0>(v[i]);
+            std::get<2>(v[i]) = std::get<1>(v[i]).arr[0];
+            std::get<3>(v[i]) = int(std::get<2>(v[i]));
+            std::get<4>(v[i]) = char('0' + std::get<3>(v[i]));
         }
-        {
-            start = std::chrono::system_clock::now();
-            for (int i = 1; i < count; ++i)
-            {
-                std::get<0>(v[i]) = std::get<0>(v[i - 1]) + 0.01f;
-                std::get<1>(v[i]).arr[0] = std::get<0>(v[i]);
-                std::get<2>(v[i]) = std::get<1>(v[i]).arr[0];
-                std::get<3>(v[i]) = int(std::get<2>(v[i]));
-                std::get<4>(v[i]) = char('0' + std::get<3>(v[i]));
-            }
-            end = std::chrono::system_clock::now();
+        end = std::chrono::system_clock::now();
 
-            std::chrono::duration<double> s = end - start;
+        std::chrono::duration<double> s = end - start;
 
-            std::cout << "vector<tuple> iteration (access all): " << s.count() << '\n';
-        }
-        {
-            start = std::chrono::system_clock::now();
-            typedef indexing_iterator<V> I;
-            std::sort(I(v, 0), I(v, count), greater());
-            end = std::chrono::system_clock::now();
+        std::cout << name << " iteration (access all): " << s.count() << '\n';
+    }
+    {
+        start = std::chrono::system_clock::now();
+        typedef indexing_iterator<V> I;
+        std::sort(I(v, 0), I(v, count), greater());
+        end = std::chrono::system_clock::now();
 
-            std::chrono::duration<double> s = end - start;
+        std::chrono::duration<double> s = end - start;
 
-            std::cout << "vector<tuple> sort (access all): " << s.count() << '\n';
-        }
-        std::cout << "dummy: " << std::get<0>(v[count - 1]) << std::get<1>(v[count - 1]).arr[0] << std::get<2>(v[count - 1]) << '\n';
-	}
+        std::cout << name << " sort (access one, copy all): " << s.count() << '\n';
+    }
+    std::cout << "dummy: " << std::get<0>(v[count - 1]) << std::get<1>(v[count - 1]).arr[0] << std::get<2>(v[count - 1]) << '\n';
+}
+
+int main()
+{
+    test< tuple_vector<T> >("tuple_vector<std::tuple<>>");
+    test< std::vector<T> >("std::vector<std::tuple<>>");
 }
