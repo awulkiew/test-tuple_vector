@@ -24,9 +24,11 @@ returns
     
 which is convertible to value_type.
 
-The results of this test/benchmark gathered on VS2013 /O2 Win7 Intel i7 870 (Lynnfield):
+The example results of this test/benchmark for:
 
     count: 10000000
+
+Win7 Intel i7-870 VS2013 /O2:
     
     tuple_vector<std::tuple<>> iteration (access one +): 0.0300017
     tuple_vector<std::tuple<>> iteration (access one /): 0.0410023
@@ -42,4 +44,21 @@ The results of this test/benchmark gathered on VS2013 /O2 Win7 Intel i7 870 (Lyn
     std::vector<std::tuple<>> iteration (access all): 0.162009
     std::vector<std::tuple<>> sort (access one, copy all): 1.60809
     
-The data locality and access pattern is extremely important nowadays. Note that in the case of std::vector&lt;std::tuple> it's not important how many operations are performed (to some extent) because the CPU is mainly waiting for the next chunk of data.
+Linux Mint 15 Intel i5-3320M clang-3.2.1
+
+    tuple_vector<std::tuple<>> iteration (access one +): 0.00959725
+    tuple_vector<std::tuple<>> iteration (access one /): 0.0312704
+    tuple_vector<std::tuple<>> iteration (access one sqrt): 0.0315015
+    tuple_vector<std::tuple<>> iteration (access one sqrt of sqrt): 0.0817646
+    tuple_vector<std::tuple<>> iteration (access all): 0.485079
+    tuple_vector<std::tuple<>> sort (access one, copy all): 5.84472
+
+    std::vector<std::tuple<>> iteration (access one +): 0.0907764
+    std::vector<std::tuple<>> iteration (access one /): 0.0938311
+    std::vector<std::tuple<>> iteration (access one sqrt): 0.0937849
+    std::vector<std::tuple<>> iteration (access one sqrt of sqrt): 0.0955459
+    std::vector<std::tuple<>> iteration (access all): 0.480064
+    std::vector<std::tuple<>> sort (access one, copy all): 4.35685
+
+
+The data locality and access pattern is extremely important nowadays. In the case of std::vector&lt;std::tuple> it's not important how many operations are performed (to some extent) because the CPU is mainly waiting for the next chunk of data.
