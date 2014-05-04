@@ -1,7 +1,7 @@
 test-tuple_vector
 =================
 
-A container emulating std::vector&lt;std::tuple>, internally storing tuple of vectors of Ts for better locality of data of the same type.
+A container emulating std::vector&lt;std::tuple&lt;...>>, internally storing tuple of vectors of Ts for better locality of data of the same type.
 
 Intended usage:
 
@@ -22,7 +22,7 @@ returns
 
     std::tuple<T1&, T2&, T3&, ...>
     
-which is convertible to value_type.
+which is convertible to value_type. A compiler with C++11 support is required to compile it.
 
 The data locality and access pattern is extremely important nowadays. In the case of std::vector&lt;std::tuple> it's not important how many operations are performed (to some extent) because the CPU is mainly waiting for the next chunk of data.
 
