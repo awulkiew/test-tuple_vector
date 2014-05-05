@@ -3,6 +3,11 @@ test-tuple_vector
 
 A container emulating std::vector&lt;std::tuple&lt;...>>, internally storing tuple of vectors of Ts for better locality of data of the same type.
 
+Inspired by:
+ - http://channel9.msdn.com/Events/Build/2014/2-661
+ - http://channel9.msdn.com/Events/Build/2014/4-587
+ - http://channel9.msdn.com/Events/Build/2013/4-329
+
 Intended usage:
 
     tuple_vector<std::tuple<T1, T2, T3, ...>> v;
