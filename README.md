@@ -30,7 +30,7 @@ The example results of this test/benchmark for:
 
     count: 10000000
 
-Win7 Intel i7-870 VS2013 /O2:
+Win7 Intel i7-870 VS2013 /O2
     
     tuple_vector<std::tuple<>> iteration (access one +): 0.0300017
     tuple_vector<std::tuple<>> iteration (access one /): 0.0410023
@@ -46,7 +46,7 @@ Win7 Intel i7-870 VS2013 /O2:
     std::vector<std::tuple<>> iteration (access all): 0.162009
     std::vector<std::tuple<>> sort (access one, copy all): 1.60809
     
-Linux Mint 15 Intel i5-3320M clang-3.2.1
+Linux Mint 15 Intel i5-3320M clang-3.2.1 -O2
 
     tuple_vector<std::tuple<>> iteration (access one +): 0.00959725
     tuple_vector<std::tuple<>> iteration (access one /): 0.0312704
@@ -62,7 +62,7 @@ Linux Mint 15 Intel i5-3320M clang-3.2.1
     std::vector<std::tuple<>> iteration (access all): 0.480064
     std::vector<std::tuple<>> sort (access one, copy all): 4.35685
 
-Linux Mint 15 Intel i5-3320M gcc-4.7.3
+Linux Mint 15 Intel i5-3320M gcc-4.7.3 -O2
 
     tuple_vector<std::tuple<>> iteration (access one +): 0.0277802
     tuple_vector<std::tuple<>> iteration (access one /): 0.0505362
