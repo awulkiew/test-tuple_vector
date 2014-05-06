@@ -34,7 +34,12 @@ The data locality and access pattern is extremely important nowadays. In the cas
 The example results of this test/benchmark for:
 
     count: 10000000
+    
+and stored value_type:
 
+    // struct A { float arr[4]; };
+    std::tuple<float, A, double, int, std::string>
+    
 Win7 Intel i7-870 VS2013 /O2
     
     tuple_vector<std::tuple<>> iteration (access one +): 0.0300017
