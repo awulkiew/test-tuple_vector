@@ -43,6 +43,34 @@ struct for_each_container<N, N>
     static inline void resize(SizeType , Containers & ) {}
 };
 
+template <int I, int N>
+struct swap_ref_n
+{
+    template <typename TRef>
+    static inline void apply(TRef l, TRef r)
+    {
+        std::swap(std::get<I>(l), std::get<I>(r));
+        swap_ref_n<I+1,N>::apply(l, r);
+    }
+};
+
+template <int N>
+struct swap_ref_n<N, N>
+{
+    template <typename TRef>
+    static inline void apply(TRef, TRef) {}
+};
+
+namespace std {
+
+template <typename... Ts>
+void swap(std::tuple<Ts&...> l, std::tuple<Ts&...> r)
+{
+    swap_ref_n<0, sizeof...(Ts)>::apply(l, r);
+}
+
+} // namespace std
+
 template <typename Allocator, typename Tuple>
 struct tuple_vector_members
 {};
@@ -220,7 +248,7 @@ inline void test(std::string const& name)
 
         std::chrono::duration<double> s = end - start;
 
-        std::cout << name << " iteration (access one +): " << s.count() << '\n';
+        std::cout << name << " iteration (access one +): " << s.count() << "s\n";
     }
     {
         start = std::chrono::system_clock::now();
@@ -230,7 +258,7 @@ inline void test(std::string const& name)
 
         std::chrono::duration<double> s = end - start;
 
-        std::cout << name << " iteration (access one /): " << s.count() << '\n';
+        std::cout << name << " iteration (access one /): " << s.count() << "s\n";
     }
     {
         start = std::chrono::system_clock::now();
@@ -240,7 +268,7 @@ inline void test(std::string const& name)
 
         std::chrono::duration<double> s = end - start;
 
-        std::cout << name << " iteration (access one sqrt): " << s.count() << '\n';
+        std::cout << name << " iteration (access one sqrt): " << s.count() << "s\n";
     }
     {
         start = std::chrono::system_clock::now();
@@ -250,7 +278,7 @@ inline void test(std::string const& name)
 
         std::chrono::duration<double> s = end - start;
 
-        std::cout << name << " iteration (access one sqrt of sqrt): " << s.count() << '\n';
+        std::cout << name << " iteration (access one sqrt of sqrt): " << s.count() << "s\n";
     }
     {
         start = std::chrono::system_clock::now();
@@ -266,8 +294,9 @@ inline void test(std::string const& name)
 
         std::chrono::duration<double> s = end - start;
 
-        std::cout << name << " iteration (access all): " << s.count() << '\n';
+        std::cout << name << " iteration (access all): " << s.count() << "s\n";
     }
+
     {
         start = std::chrono::system_clock::now();
         typedef indexing_iterator<V> I;
@@ -276,7 +305,7 @@ inline void test(std::string const& name)
 
         std::chrono::duration<double> s = end - start;
 
-        std::cout << name << " sort (access one, copy all): " << s.count() << '\n';
+        std::cout << name << " sort (access one, copy all): " << s.count() << "s\n";
     }
     std::cout << "dummy: " << std::get<0>(v[count - 1]) << std::get<1>(v[count - 1]).arr[0] << std::get<2>(v[count - 1]) << '\n';
 }
