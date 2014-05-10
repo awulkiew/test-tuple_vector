@@ -32,7 +32,7 @@ template <typename... Refs>
 struct tuple_ref
 {
     template <typename... Args>
-    tuple_ref(Args&&... t) : refs(t...) {}
+    tuple_ref(Args&&... t) : refs(std::forward<Args>(t)...) {}
 
     template <typename... Us>
     tuple_ref(tuple_ref<Us...> & t) : refs(t.refs) {}
@@ -85,6 +85,10 @@ public:
         std::tuple_element< I, std::tuple<Refs...> >::type type;
 };
 
+} // namespace std
+
+namespace std {
+
 template <std::size_t I, typename... Ts>
 inline
 typename std::tuple_element<I, locmem::tuple_ref<Ts&...> >::type &
@@ -96,7 +100,7 @@ get(locmem::tuple_ref<Ts&...> t)
 template <std::size_t I, typename... Ts>
 inline
 typename std::tuple_element<I, locmem::tuple_ref<const Ts&...> >::type const&
-get(locmem::tuple_ref<const Ts&...> t)
+get(locmem::tuple_ref<Ts const&...> t)
 {
     return std::get<I>(t.refs);
 }
@@ -109,10 +113,33 @@ get(locmem::tuple_ref<Ts&&...> t)
     return std::move(std::get<I>(t.refs));
 }
 
+} // namesapce std
+
+namespace locmem { namespace detail {
+
+template <typename Ret, typename Ref, std::size_t... Is>
+inline
+Ret move_impl(Ref ref, integral_sequence<std::size_t, Is...>)
+{
+    return Ret(std::move(std::get<Is>(ref))...);
+}
+
+}} // namespace locmem::detail
+
+namespace std {
+
 template <typename... Ts>
+inline
 locmem::tuple_ref<Ts&&...> move(locmem::tuple_ref<Ts&...> t)
 {
-    return locmem::tuple_ref<Ts&&...>(t);
+    typedef locmem::tuple_ref<Ts&&...> ret_t;
+    typedef typename
+        locmem::make_integral_sequence
+            <
+                std::size_t, 0, sizeof...(Ts)
+            >::type iseq;
+
+    return locmem::detail::move_impl<ret_t>(t, iseq());
 }
 
 } // namespace std
@@ -142,6 +169,7 @@ struct swap_ref_n<N, N>
 namespace std {
 
 template <typename... Ts>
+inline
 void swap(locmem::tuple_ref<Ts&...> l, locmem::tuple_ref<Ts&...> r)
 {
     locmem::detail::swap_ref_n<0, sizeof...(Ts)>::apply(l, r);
