@@ -4,8 +4,6 @@
 // Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 
-#include <vector>
-#include <tuple>
 #include <algorithm>
 
 #include <fstream>
@@ -14,200 +12,9 @@
 #include <chrono>
 #include <cassert>
 
-template <int ...>
-struct seq {};
+#include <memory>
 
-template <int N, int ...S>
-struct gens : gens<N - 1, N - 1, S...> { };
-
-template <int ...S>
-struct gens<0, S...> {
-    typedef seq<S...> type;
-};
-
-template <int I, int N>
-struct for_each_container
-{
-    template <typename SizeType, typename Containers>
-    static inline void resize(SizeType count, Containers & containers)
-    {
-        std::get<I>(containers).resize(count);
-        for_each_container<I + 1, N>::resize(count, containers);
-    }
-};
-
-template <int N>
-struct for_each_container<N, N>
-{
-    template <typename SizeType, typename Containers>
-    static inline void resize(SizeType , Containers & ) {}
-};
-
-template <int I, int N>
-struct swap_ref_n
-{
-    template <typename TRef>
-    static inline void apply(TRef l, TRef r)
-    {
-        std::swap(std::get<I>(l), std::get<I>(r));
-        swap_ref_n<I+1,N>::apply(l, r);
-    }
-};
-
-template <int N>
-struct swap_ref_n<N, N>
-{
-    template <typename TRef>
-    static inline void apply(TRef, TRef) {}
-};
-
-namespace std {
-
-template <typename... Ts>
-void swap(std::tuple<Ts&...> l, std::tuple<Ts&...> r)
-{
-    swap_ref_n<0, sizeof...(Ts)>::apply(l, r);
-}
-
-} // namespace std
-
-template <typename Allocator, typename Tuple>
-struct tuple_vector_members
-{};
-
-template <typename Allocator, typename... Ts>
-struct tuple_vector_members<Allocator, std::tuple<Ts...> >
-{
-    typedef typename Allocator::size_type size_type;
-    typedef std::tuple<Ts&...> reference;
-    typedef std::tuple<Ts...> value_type;
-
-    reference operator[](size_type index)
-    {
-        return subscript_dispatch(index, typename gens<sizeof...(Ts)>::type());
-    }
-
-    void resize(size_type count)
-    {
-        // TODO - revert on exception
-        for_each_container<0, sizeof...(Ts)>::resize(count, m_containers);
-    }
-
-private:
-    typedef std::tuple< std::vector<Ts, Allocator>... > containers_type;
-
-    template <int ...S>
-    reference subscript_dispatch(size_type index, seq<S...>)
-    {
-        return reference(std::get<S>(m_containers)[index]...);
-    }
-
-    containers_type m_containers;
-};
-
-template <typename Tuple, typename Allocator = std::allocator<Tuple> >
-class tuple_vector
-    : private tuple_vector_members<Allocator, Tuple>
-{
-    typedef tuple_vector_members<Allocator, Tuple> base_t;
-
-public:
-    typedef typename base_t::size_type size_type;
-    typedef typename base_t::reference reference;
-    typedef typename base_t::value_type value_type;
-    
-    reference operator[](size_type index)
-    {
-        return base_t::operator[](index);
-    }
-
-    void resize(size_type count)
-    {
-        return base_t::resize(count);
-    }
-};
-
-template <typename Container>
-class indexing_iterator
-{
-public:
-    typedef typename Container::value_type value_type;
-    typedef typename Container::reference reference;
-    typedef std::random_access_iterator_tag iterator_category;
-    typedef std::ptrdiff_t difference_type; // change
-    typedef int pointer;
-
-    indexing_iterator(Container & c, typename Container::size_type i)
-        : m_container(&c), m_index(i)
-    {}
-
-    reference operator*()
-    {
-        return m_container->operator[](m_index);
-    }
-
-    indexing_iterator & operator++()
-    {
-        ++m_index;
-        return *this;
-    }
-
-    indexing_iterator operator++(int)
-    {
-        indexing_iterator tmp(*this);
-        operator++();
-        return tmp;
-    }
-
-    indexing_iterator & operator--()
-    {
-        --m_index;
-        return *this;
-    }
-
-    indexing_iterator operator--(int)
-    {
-        indexing_iterator tmp(*this);
-        operator--();
-        return tmp;
-    }
-
-    difference_type operator-(indexing_iterator const& r) const
-    {
-        return r.m_index >= m_index ? r.m_index - m_index : m_index - r.m_index;
-    }
-
-    indexing_iterator operator+(difference_type d) const
-    {
-        return indexing_iterator(*m_container, m_index + d);
-    }
-
-    indexing_iterator operator-(difference_type d) const
-    {
-        return indexing_iterator(*m_container, m_index - d);
-    }
-
-    friend bool operator==(indexing_iterator const& l, indexing_iterator const& r)
-    {
-        assert(l.m_container == r.m_container);
-        return l.m_index == r.m_index;
-    }
-
-    friend bool operator!=(indexing_iterator const& l, indexing_iterator const& r)
-    {
-        assert(l.m_container == r.m_container);
-        return l.m_index != r.m_index;
-    }
-
-    friend bool operator<(indexing_iterator const& l, indexing_iterator const& r)
-    {
-        assert(l.m_container == r.m_container);
-        return l.m_index < r.m_index;
-    }
-
-    Container * m_container;
-    typename Container::size_type m_index;
-};
+#include "locmem/tuple_vector.hpp"
 
 struct greater
 {
@@ -299,8 +106,7 @@ inline void test(std::string const& name)
 
     {
         start = std::chrono::system_clock::now();
-        typedef indexing_iterator<V> I;
-        std::sort(I(v, 0), I(v, count), greater());
+        std::sort(v.begin(), v.end(), greater());
         end = std::chrono::system_clock::now();
 
         std::chrono::duration<double> s = end - start;
@@ -312,6 +118,29 @@ inline void test(std::string const& name)
 
 int main()
 {
-    test< tuple_vector<T> >("tuple_vector<std::tuple<>>");
+//    typedef std::unique_ptr<int> P;
+//    P a(new int(10));
+//    std::cout << 1 << std::endl;
+//    std::cout << a.get() << std::endl;
+
+//    std::tuple<P> t(std::move(a));
+//    std::cout << 2 << std::endl;
+//    std::cout << a.get() << std::endl;
+//    std::cout << std::get<0>(t).get() << std::endl;
+
+//    locmem::tuple_ref<P&&> tt(std::move(t));
+//    std::cout << 3 << std::endl;
+//    std::cout << a.get() << std::endl;
+//    std::cout << std::get<0>(t).get() << std::endl;
+//    std::cout << std::get<0>(tt).get() << std::endl;
+
+//    std::tuple<P> t2(std::move(tt));
+//    std::cout << 4 << std::endl;
+//    std::cout << a.get() << std::endl;
+//    std::cout << std::get<0>(t).get() << std::endl;
+//    std::cout << std::get<0>(tt).get() << std::endl;
+//    std::cout << std::get<0>(t2).get() << std::endl;
+
+    test< locmem::tuple_vector<T> >("tuple_vector<std::tuple<>>");
     test< std::vector<T> >("std::vector<std::tuple<>>");
 }
