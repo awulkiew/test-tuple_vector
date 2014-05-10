@@ -23,11 +23,9 @@ Note that
 
     tuple_vector<>::operator[]
 
-returns
+returns a wrapper around `std::tuple<>` containing l-value references.
 
-    std::tuple<T1&, T2&, T3&, ...>
-    
-which is convertible to value_type. A compiler supporting C++11 is required to compile this code.
+A compiler supporting C++11 is required to compile this code.
 
 The data locality and access pattern is extremely important nowadays. In the case of std::vector&lt;std::tuple> it's not important how many operations are performed (to some extent) because the CPU is mainly waiting for the next chunk of data.
 
