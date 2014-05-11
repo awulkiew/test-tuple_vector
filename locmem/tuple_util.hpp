@@ -63,10 +63,29 @@ struct tuple_ref
     tuple_ref & operator=(std::tuple<Us...> && t) { refs = std::move(t); return *this; }
 
     template <typename... Us>
-    operator std::tuple<Us...>()
+    operator std::tuple<Us...>() const
     {
-        // TODO: properly forward members
-        return std::tuple<Us...>(refs);
+        typedef typename
+            locmem::make_integral_sequence
+                <
+                    std::size_t, 0, sizeof...(Refs)
+                >::type iseq;
+
+        return cast_impl< std::tuple<Us...> >(iseq());
+    }
+
+    template <typename Ret, std::size_t... Is>
+    inline
+    Ret cast_impl(integral_sequence<std::size_t, Is...>) const
+    {
+        return Ret(
+            std::forward
+                <
+                    typename std::tuple_element
+                        <
+                            Is, std::tuple<Refs...>
+                        >::type
+                >(std::get<Is>(refs))...);
     }
 
     std::tuple<Refs...> refs;

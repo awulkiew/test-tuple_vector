@@ -116,30 +116,28 @@ inline void test(std::string const& name)
     std::cout << "dummy: " << std::get<0>(v[count - 1]) << std::get<1>(v[count - 1]).arr[0] << std::get<2>(v[count - 1]) << '\n';
 }
 
+void test_tuple_ref()
+{
+    typedef std::unique_ptr<int> P;
+    P a(new int(10));
+    assert(a.get());
+    std::tuple<P> t(std::move(a));
+    assert(! a.get() && std::get<0>(t).get() && *std::get<0>(t) == 10);
+    locmem::tuple_ref<P&&> rref(std::move(t));
+    assert(! a.get() && std::get<0>(t).get() && std::get<0>(rref).get() && *std::get<0>(rref) == 10);
+    std::tuple<P> tt(std::move(rref));
+    assert(! std::get<0>(t).get() && ! std::get<0>(rref).get() && std::get<0>(tt).get() && *std::get<0>(tt) == 10);
+
+//    locmem::tuple_ref<P&> lref(t);
+//    assert(! std::get<0>(t).get() && ! std::get<0>(lref).get());
+
+//    std::get<0>(lref) = std::unique_ptr<int>(new int(20));
+//    assert(std::get<0>(t).get() && std::get<0>(lref).get() && *std::get<0>(t) == 20);
+}
+
 int main()
 {
-//    typedef std::unique_ptr<int> P;
-//    P a(new int(10));
-//    std::cout << 1 << std::endl;
-//    std::cout << a.get() << std::endl;
-
-//    std::tuple<P> t(std::move(a));
-//    std::cout << 2 << std::endl;
-//    std::cout << a.get() << std::endl;
-//    std::cout << std::get<0>(t).get() << std::endl;
-
-//    locmem::tuple_ref<P&&> tt(std::move(t));
-//    std::cout << 3 << std::endl;
-//    std::cout << a.get() << std::endl;
-//    std::cout << std::get<0>(t).get() << std::endl;
-//    std::cout << std::get<0>(tt).get() << std::endl;
-
-//    std::tuple<P> t2(std::move(tt));
-//    std::cout << 4 << std::endl;
-//    std::cout << a.get() << std::endl;
-//    std::cout << std::get<0>(t).get() << std::endl;
-//    std::cout << std::get<0>(tt).get() << std::endl;
-//    std::cout << std::get<0>(t2).get() << std::endl;
+    test_tuple_ref();
 
     test< locmem::tuple_vector<T> >("tuple_vector<std::tuple<>>");
     test< std::vector<T> >("std::vector<std::tuple<>>");
