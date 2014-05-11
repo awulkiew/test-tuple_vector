@@ -63,7 +63,11 @@ struct tuple_ref
     tuple_ref & operator=(std::tuple<Us...> && t) { refs = std::move(t); return *this; }
 
     template <typename... Us>
-    operator std::tuple<Us...>() { return std::tuple<Us...>(refs); }
+    operator std::tuple<Us...>()
+    {
+        // TODO: properly forward members
+        return std::tuple<Us...>(refs);
+    }
 
     std::tuple<Refs...> refs;
 };
@@ -89,28 +93,76 @@ public:
 
 namespace std {
 
-template <std::size_t I, typename... Ts>
+//template <std::size_t I, typename... Ts>
+//inline
+//typename std::tuple_element<I, locmem::tuple_ref<Ts&...> >::type &
+//get(locmem::tuple_ref<Ts&...> & t)
+//{
+//    return std::get<I>(t.refs);
+//}
+
+//template <std::size_t I, typename... Ts>
+//inline
+//typename std::tuple_element<I, locmem::tuple_ref<const Ts&...> >::type const&
+//get(locmem::tuple_ref<Ts const&...> & t)
+//{
+//    return std::get<I>(t.refs);
+//}
+
+//template <std::size_t I, typename... Ts>
+//inline
+//typename std::tuple_element<I, locmem::tuple_ref<Ts&&...> >::type &&
+//get(locmem::tuple_ref<Ts&&...> & t)
+//{
+//    return std::get<I>(std::move(t.refs));
+//}
+
+//template <std::size_t I, typename... Ts>
+//inline
+//typename std::tuple_element<I, locmem::tuple_ref<Ts&...> >::type &
+//get(locmem::tuple_ref<Ts&...> && t)
+//{
+//    return std::get<I>(t.refs);
+//}
+
+//template <std::size_t I, typename... Ts>
+//inline
+//typename std::tuple_element<I, locmem::tuple_ref<const Ts&...> >::type const&
+//get(locmem::tuple_ref<Ts const&...> && t)
+//{
+//    return std::get<I>(t.refs);
+//}
+
+//template <std::size_t I, typename... Ts>
+//inline
+//typename std::tuple_element<I, locmem::tuple_ref<Ts&&...> >::type &&
+//get(locmem::tuple_ref<Ts&&...> && t)
+//{
+//    return std::get<I>(std::move(t.refs));
+//}
+
+template <std::size_t I, typename... Refs>
 inline
-typename std::tuple_element<I, locmem::tuple_ref<Ts&...> >::type &
-get(locmem::tuple_ref<Ts&...> t)
+typename std::tuple_element<I, locmem::tuple_ref<Refs...> >::type &
+get(locmem::tuple_ref<Refs...> & t)
 {
     return std::get<I>(t.refs);
 }
 
-template <std::size_t I, typename... Ts>
+template <std::size_t I, typename... Refs>
 inline
-typename std::tuple_element<I, locmem::tuple_ref<const Ts&...> >::type const&
-get(locmem::tuple_ref<Ts const&...> t)
+typename std::tuple_element<I, locmem::tuple_ref<Refs...> >::type const&
+get(locmem::tuple_ref<Refs...> const& t)
 {
     return std::get<I>(t.refs);
 }
 
-template <std::size_t I, typename... Ts>
+template <std::size_t I, typename... Refs>
 inline
-typename std::tuple_element<I, locmem::tuple_ref<Ts&&...> >::type &&
-get(locmem::tuple_ref<Ts&&...> t)
+typename std::tuple_element<I, locmem::tuple_ref<Refs...> >::type &&
+get(locmem::tuple_ref<Refs...> && t)
 {
-    return std::move(std::get<I>(t.refs));
+    return std::get<I>(std::move(t.refs));
 }
 
 } // namesapce std
